@@ -6,11 +6,20 @@ const utils = require('../utils').default
 
 router.post("/", async (req, res) => {
     if(!utils.verify(req.body, ["nome", "cnpj", "email", "logradouro",
-     "numero", "bairro", "cidade", "estado", "telefone", "imagem"])) {
+     "numero", "bairro", "cidade", "estado", "telefone", "imagem", "senha"])) {
         return res.sendStatus(400)
     }
 
     try {
+
+        const isCnpjInUse = !!await knex("organizacao").select("*").where({
+            cnpj: req.body.cnpj,
+            deletado: false
+        }).first()
+
+        if(isCnpjInUse){
+            return res.status(409).send("CNPJ já cadastrado")
+        }
 
         const newBody = req.body;
         const id = uuid.v4(); 
