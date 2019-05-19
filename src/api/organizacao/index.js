@@ -41,5 +41,67 @@ router.post("/", async (req, res) => {
 
 });
 
+router.get("/", async (req, res) => {
+    try{
+        const allOrg = await knex("organizacao").select("*"); 
+
+        return res.json(allOrg);
+    } catch (err) {
+        console.error(err)
+        return res.sendStatus(500);
+    }
+});
+
+router.post("/:id/veterinarios/candidatar", async (req, res) => {
+if(!utils.verify(req.body, ["id"])) {
+        return res.sendStatus(400)
+    }
+
+    try {
+        const newBody = req.body;
+        const id = uuid.v4(); 
+        const newObj = {
+            idveterinario_organizacao: id,
+            idorganizacao: req.params.id,
+            idveterinario: req.body.id,
+            status_solicitacao: "CANDIDATADO"
+        }
+
+        await knex("veterinario_organizacao").insert(newObj); 
+        const newCandidate = await knex("veterinario_organizacao").select("*").where("idveterinario_organizacao", id); 
+
+        return res.json(newCandidate);
+    } catch (err) {
+        console.error(err)
+        return res.sendStatus(500);
+    }
+
+});
+
+router.post("/:id/veterinarios/aceitar", async (req, res) => {
+    if(!utils.verify(req.body, ["id", "aceito"])) {
+            return res.sendStatus(400)
+        }
+    
+        try {
+            const newBody = req.body;
+            const newObj = {
+                idveterinario: req.body.id,
+                status_solicitacao: req.body.aceito ? "ACEITO" : "NEGADO"
+            }
+    
+            await knex("veterinario_organizacao")
+                .where('idveterinario', '=', newObj.idveterinario)
+                .update({ status_solicitacao: newObj.status_solicitacao }) ;
+
+            const newCandidate = await knex("veterinario_organizacao").select("*").where("idveterinario", newObj.idveterinario); 
+    
+            return res.json(newCandidate);
+        } catch (err) {
+            console.error(err)
+            return res.sendStatus(500);
+        }
+    
+    });
 
 module.exports = router;
