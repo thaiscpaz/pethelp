@@ -28,9 +28,21 @@ router.post("/", async (req, res) => {
             idcidadao: id,
             deletado: false,
             data_criacao: new Date(),
-            ...newBody
+            nome: req.body.nome,
+            data_nascimento: req.body.data_nascimento,
+            numero_telefone: req.body.numero_telefone
         }
 
+        const idLogin = uuid.v4(); 
+        const newLogin = {
+            idlogin: idLogin,
+            idusuario: newObj.idcidadao,
+            tipo_usuario: "CIDADAO",
+            email: req.body.email,
+            senha: req.body.senha
+        }
+
+        await knex("login").insert(newLogin);
         await knex("cidadao").insert(newObj); 
         const newCidadao = await knex("cidadao").select("*").where("idcidadao", id); 
 
