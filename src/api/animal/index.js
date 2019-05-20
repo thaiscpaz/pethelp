@@ -17,6 +17,7 @@ router.post("/", async (req, res) => {
             idanimal: id,
             resgatado: false,
             data_criacao: new Date(),
+            status: "RESGATAR",
             ...newBody
         }
 
@@ -30,6 +31,5 @@ router.post("/", async (req, res) => {
     }
 
 });
-
 
 module.exports = router;

@@ -83,25 +83,78 @@ router.post("/:id/veterinarios/aceitar", async (req, res) => {
             return res.sendStatus(400)
         }
     
-        try {
-            const newBody = req.body;
-            const newObj = {
-                idveterinario: req.body.id,
-                status_solicitacao: req.body.aceito ? "ACEITO" : "NEGADO"
-            }
-    
-            await knex("veterinario_organizacao")
-                .where('idveterinario', '=', newObj.idveterinario)
-                .update({ status_solicitacao: newObj.status_solicitacao }) ;
-
-            const newCandidate = await knex("veterinario_organizacao").select("*").where("idveterinario", newObj.idveterinario); 
-    
-            return res.json(newCandidate);
-        } catch (err) {
-            console.error(err)
-            return res.sendStatus(500);
+    try {
+        const newBody = req.body;
+        const newObj = {
+            idveterinario: req.body.id,
+            status_solicitacao: req.body.aceito ? "ACEITO" : "NEGADO"
         }
+
+        await knex("veterinario_organizacao")
+            .where('idveterinario', '=', newObj.idveterinario)
+            .update({ status_solicitacao: newObj.status_solicitacao }) ;
+
+        const newCandidate = await knex("veterinario_organizacao").select("*").where("idveterinario", newObj.idveterinario); 
+
+        return res.json(newCandidate);
+    } catch (err) {
+        console.error(err)
+        return res.sendStatus(500);
+    }
     
-    });
+});
+
+router.post("/:id/evento", async (req, res) => {
+   
+    try {
+        const newBody = req.body;
+        const id = uuid.v4(); 
+        const newObj = {
+            idfeira_adocao: id,
+            idorganizacao: req.params.id,
+            nome: req.body.nome,
+            logradouro: req.body.logradouro,
+            numero: req.body.numero,
+            bairro: req.body.bairro,
+            cidade: req.body.cidade,
+            estado: req.body.estado,
+            data: req.body.data,
+            hora: req.body.hora,
+            imagem: req.body.imagem
+        }
+
+        for (const animal of req.body.animais){
+            const id = uuid.v4(); 
+            const newAnimal = {
+                idanimal: id,
+                nome: animal.nome,
+                idade: animal.idade,
+                sexo: animal.sexo,
+                porte: animal.porte,
+                observacao: animal.observacao,
+                imagem: animal.imagem,
+                status: "ADOÇÃO",
+                data_criacao: new Date()  
+            }
+            try{
+                await knex("animal").insert(newAnimal);
+            } catch(err){
+                console.error(err)
+                return res.sendStatus(500);
+            }
+
+        };
+
+        await knex("feira_adocao").insert(newObj);
+
+        const newAdoptionFair = await knex("feira_adocao").select("*").where("idfeira_adocao", id); 
+
+        return res.json(newAdoptionFair);
+    } catch (err) {
+        console.error(err)
+        return res.sendStatus(500);
+    }
+    
+});
 
 module.exports = router;
