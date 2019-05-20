@@ -21,6 +21,8 @@ router.post("/", async (req, res) => {
             return res.status(409).send("CNPJ já cadastrado")
         }
 
+        req.body.senha = utils.encrypt(req.body.senha);
+
         const newBody = req.body;
         const id = uuid.v4(); 
         const newObj = {

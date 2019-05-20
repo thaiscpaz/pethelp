@@ -16,6 +16,19 @@ function verify(body, requiredProperties) {
     return true;
 }
 
+function encrypt(password) {
+    const crypto = require("crypto");
+    const data_crypto = {
+        alg : "aes256",
+        secret : "chaves",
+        type: "hex"
+    };
+    const cipher = crypto.createCipher(data_crypto.alg, data_crypto.secret);
+    cipher.update(password);
+    return cipher.final(data_crypto.type);
+};
+
 exports.default = {
-    verify
+    verify,
+    encrypt
 }
