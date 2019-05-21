@@ -1,3 +1,10 @@
+const crypto = require("crypto");
+const data_crypto = {
+    alg : "aes256",
+    secret : "chaves",
+    type: "hex"
+};
+
 function verify(body, requiredProperties) {
     const keys = Object.keys(body);
 
@@ -17,18 +24,21 @@ function verify(body, requiredProperties) {
 }
 
 function encrypt(password) {
-    const crypto = require("crypto");
-    const data_crypto = {
-        alg : "aes256",
-        secret : "chaves",
-        type: "hex"
-    };
+    
     const cipher = crypto.createCipher(data_crypto.alg, data_crypto.secret);
     cipher.update(password);
     return cipher.final(data_crypto.type);
 };
 
+
+function decrypt(password) {
+    const decipher = crypto.createDecipher(data_crypto.alg, data_crypto.secret);
+    decipher.update(password, data_crypto.type);
+    return decipher.final();
+};
+
 exports.default = {
     verify,
-    encrypt
+    encrypt,
+    decrypt
 }
