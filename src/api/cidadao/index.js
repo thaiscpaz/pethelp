@@ -11,9 +11,8 @@ router.post("/", async (req, res) => {
 
     try {
 
-        const isEmailInUse = !!await knex("cidadao").select("*").where({
+        const isEmailInUse = !!await knex("login").select("*").where({
             email: req.body.email,
-            deletado: false
         }).first()
 
         if(isEmailInUse){
@@ -26,8 +25,6 @@ router.post("/", async (req, res) => {
         const id = uuid.v4(); 
         const newObj = {
             idcidadao: id,
-            deletado: false,
-            data_criacao: new Date(),
             nome: req.body.nome,
             data_nascimento: req.body.data_nascimento,
             numero_telefone: req.body.numero_telefone

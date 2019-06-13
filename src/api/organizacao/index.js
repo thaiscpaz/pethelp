@@ -5,8 +5,7 @@ const knex = require('../../mysql').default
 const utils = require('../utils').default
 
 router.post("/", async (req, res) => {
-    if(!utils.verify(req.body, ["nome", "cnpj", "email", "logradouro",
-     "numero", "bairro", "cidade", "estado", "telefone", "imagem", "senha"])) {
+    if(!utils.verify(req.body, ["nome", "cnpj", "email", "cep", "senha"])) {
         return res.sendStatus(400)
     }
 
@@ -14,7 +13,6 @@ router.post("/", async (req, res) => {
 
         const isCnpjInUse = !!await knex("organizacao").select("*").where({
             cnpj: req.body.cnpj,
-            deletado: false
         }).first()
 
         if(isCnpjInUse){
@@ -27,17 +25,9 @@ router.post("/", async (req, res) => {
         const id = uuid.v4(); 
         const newObj = {
             idorganizacao: id,
-            data_criacao: new Date(),
-            deletado: false,
             nome: req.body.nome,
             cnpj: req.body.cnpj, 
-            logradouro: req.body.logradouro,
-            numero: req.body.numero, 
-            bairro: req.body.bairro, 
-            cidade: req.body.cidade, 
-            estado: req.body.estado, 
-            telefone: req.body.telefone, 
-            imagem: req.body.imagem
+            cep: req.body.cep
         }
 
         const idLogin = uuid.v4(); 
@@ -72,65 +62,13 @@ router.get("/", async (req, res) => {
     }
 });
 
-router.post("/:id/veterinarios/candidatar", async (req, res) => {
-if(!utils.verify(req.body, ["id"])) {
-        return res.sendStatus(400)
-    }
-
-    try {
-        const newBody = req.body;
-        const id = uuid.v4(); 
-        const newObj = {
-            idveterinario_organizacao: id,
-            idorganizacao: req.params.id,
-            idveterinario: req.body.id,
-            status_solicitacao: "CANDIDATADO"
-        }
-
-        await knex("veterinario_organizacao").insert(newObj); 
-        const newCandidate = await knex("veterinario_organizacao").select("*").where("idveterinario_organizacao", id); 
-
-        return res.json(newCandidate);
-    } catch (err) {
-        console.error(err)
-        return res.sendStatus(500);
-    }
-
-});
-
-router.post("/:id/veterinarios/aceitar", async (req, res) => {
-    if(!utils.verify(req.body, ["id", "aceito"])) {
-            return res.sendStatus(400)
-        }
-    
-    try {
-        const newBody = req.body;
-        const newObj = {
-            idveterinario: req.body.id,
-            status_solicitacao: req.body.aceito ? "ACEITO" : "NEGADO"
-        }
-
-        await knex("veterinario_organizacao")
-            .where('idveterinario', '=', newObj.idveterinario)
-            .update({ status_solicitacao: newObj.status_solicitacao }) ;
-
-        const newCandidate = await knex("veterinario_organizacao").select("*").where("idveterinario", newObj.idveterinario); 
-
-        return res.json(newCandidate);
-    } catch (err) {
-        console.error(err)
-        return res.sendStatus(500);
-    }
-    
-});
-
 router.post("/:id/evento", async (req, res) => {
    
     try {
         const newBody = req.body;
         const id = uuid.v4(); 
         const newObj = {
-            idfeira_adocao: id,
+            idfeira: id,
             idorganizacao: req.params.id,
             nome: req.body.nome,
             logradouro: req.body.logradouro,
@@ -143,21 +81,16 @@ router.post("/:id/evento", async (req, res) => {
             imagem: req.body.imagem
         }
 
+        await knex("feira").insert(newObj);
+
         for (const animal of req.body.animais){
             const id = uuid.v4(); 
             const newAnimal = {
-                idanimal: id,
-                nome: animal.nome,
-                idade: animal.idade,
-                sexo: animal.sexo,
-                porte: animal.porte,
-                observacao: animal.observacao,
-                imagem: animal.imagem,
-                status: "ADOÇÃO",
-                data_criacao: new Date()  
+                idfeira_animais: id,
+                imagem: animal.imagem
             }
             try{
-                await knex("animal").insert(newAnimal);
+                await knex("feira_animais").insert(newAnimal);
             } catch(err){
                 console.error(err)
                 return res.sendStatus(500);
@@ -165,9 +98,7 @@ router.post("/:id/evento", async (req, res) => {
 
         };
 
-        await knex("feira_adocao").insert(newObj);
-
-        const newAdoptionFair = await knex("feira_adocao").select("*").where("idfeira_adocao", id); 
+        const newAdoptionFair = await knex("feira").select("*").where("idfeira", id); 
 
         return res.json(newAdoptionFair);
     } catch (err) {

@@ -29,11 +29,7 @@ router.get("/", async (req, res) => {
         if(req.body.tipo_usuario == "CIDADAO"){
             user = await knex("cidadao").select("*").where("idcidadao", login.idusuario)
         }
-
-        if(req.body.tipo_usuario == "VETERINARIO"){
-            user = await knex("veterinario").select("*").where("idveterinario", login.idusuario)
-        }
-
+       
         if(req.body.tipo_usuario == "ORGANIZACAO"){
             user = await knex("organizacao").select("*").where("idorganizacao", login.idusuario)
         }

@@ -5,7 +5,7 @@ const knex = require('../../mysql').default
 const utils = require('../utils').default
 
 router.post("/", async (req, res) => {
-    if(!utils.verify(req.body, ["sexo", "porte", "ferida_exposta", "observacao", "imagem", "latitude", "longitude"])) {
+    if(!utils.verify(req.body, ["imagem", "latitude", "longitude"])) {
         return res.sendStatus(400)
     }
 
@@ -15,9 +15,6 @@ router.post("/", async (req, res) => {
         const id = uuid.v4(); 
         const newObj = {
             idanimal: id,
-            resgatado: false,
-            data_criacao: new Date(),
-            status: "RESGATAR",
             ...newBody
         }
 
